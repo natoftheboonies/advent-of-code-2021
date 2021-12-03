@@ -1,7 +1,5 @@
 from aoc import readinput
 
-from pprint import pprint
-
 sample = """00100
 11110
 10110
@@ -25,64 +23,45 @@ for line in puzzle:
     row = tuple(int(c) for c in line)
     grid.append(row)
 
-tipped = list(zip(*grid[::-1]))
-
-#pprint(tipped)
-
-def max_bin(row):
+def max_bit(row):
+    """max of bit frequency, tie returns 1"""
     return 1 if row.count(1) >= row.count(0) else 0
 
-maxes = mins = ''
+def min_bit(row):
+    """min of bit frequency, tie returns 0"""
+    return 1 if row.count(1) < row.count(0) else 0    
 
-for row in tipped:
-    maxes += '0' if row.count(0) > row.count(1) else '1'
-    mins += '1' if row.count(0) > row.count(1) else '0'
+def dec_from_bits(bits):
+    return int(''.join([str(bit) for bit in bits]),2)
+
+# part 1, find most/least common bit for each number
+
+tipped = list(zip(*grid[::-1]))
+maxes = [max_bit(row) for row in tipped]
+mins = [min_bit(row) for row in tipped]
 
 #print(maxes, mins)
-print("#1", int(maxes,2)*int(mins,2))
+print("#1", dec_from_bits(maxes)*dec_from_bits(mins))
 
-def filter_oxygen(rows, target):
-    print("recurse", rows[0], len(rows))
-    if len(rows) == 1:
-        return rows[0]
-    filtered = list()
-    for row in rows:
-        if row[0]==target:
-            filtered.append(row[1:])
+# part 2, find most/least common, filtering each step
 
-    if len(filtered[0])==0:
-        return [target]
-    new_target = max_bin([row[0] for row in filtered])
-    
-    return [target] + filter_oxygen(filtered, new_target)
+def diagnostic(rows, minmax = max_bit):
 
+    # determine most/least common bit for head
+    target = minmax([row[0] for row in rows])
 
-def filter_co2(rows, target):
-    print("recurse", rows[0], len(rows))
-    if len(rows) == 1:
-        return list(rows[0])
-    filtered = list()
-    for row in rows:
-        if row[0]==target:
-            filtered.append(row[1:])
+    # keep only numbers selected by the bit criteria
+    filtered = [row[1:] for row in rows if row[0] == target]
 
-    if len(filtered[0])==0:
-        return [target]
-    new_target = (max_bin([row[0] for row in filtered])+1)%2
-    
-    return [target] + filter_co2(filtered, new_target)
+    # if one number (row) left, stop and return it
+    if len(filtered) <= 1:
+        return [target] + list(filtered[0])
 
+    # otherwise, recurse
+    return [target] + diagnostic(filtered, minmax)
 
-oxygen = filter_oxygen(grid, int(maxes[0]))
+o2_generator = diagnostic(grid, max_bit)
+co2_scrubber = diagnostic(grid, min_bit)
 
-print(oxygen)
-
-co2 = filter_co2(grid, int(mins[0]))
-
-print(co2)
-
-oxy_rating = int(''.join([str(x) for x in oxygen]),2)
-co2_rating = int(''.join([str(x) for x in co2]),2)
-
-print("#2",oxy_rating*co2_rating)
+print("#2",dec_from_bits(o2_generator)*dec_from_bits(co2_scrubber))
 
