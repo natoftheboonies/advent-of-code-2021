@@ -1,5 +1,4 @@
 from aoc import readinput
-from pprint import pprint
 
 input = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
@@ -42,12 +41,11 @@ for board in boards:
     game_boards.append((board, tipped))
 
 
-playing_boards = set(range(len(boards)))
 winning_boards = set()
 
-score = 0
 for play in draw:
     #print("play", play)
+
     for rows, cols in game_boards:
         for row in rows:
             if play in row:
@@ -59,25 +57,23 @@ for play in draw:
     for b, (rows, cols) in enumerate(game_boards):
         for idx, row in enumerate(rows):
             if len(row) == 0:
-                print(f"board {b} won on row {idx}")
+                #print(f"board {b} won on row {idx}")
                 winning_boards.add(b)
         for idx, col in enumerate(cols):
             if len(col) == 0:
-                print(f"board {b} won on col {idx}")
+                #print(f"board {b} won on col {idx}")
                 winning_boards.add(b)
+    
     if winning_boards:
         winner = list(winning_boards)[0]
-        print(f"scoring {winner}")
         rows, cols = game_boards[winner]
         score = sum([sum(row) for row in rows])
-        print("won on play",play)
         break      
 
 print("#1",score*play)
 
-last = None
+# continue where we left off
 for play in draw[draw.index(play)+1:]:
-    print("continue",play)
 
     for b, (rows, cols) in enumerate(game_boards):
         if b in winning_boards:
@@ -94,31 +90,20 @@ for play in draw[draw.index(play)+1:]:
             continue        
         for idx, row in enumerate(rows):
             if len(row) == 0:
-                print(f"board {b} won on row {idx}")
+                #print(f"board {b} won on row {idx}")
                 winning_boards.add(b)
         for idx, col in enumerate(cols):
             if len(col) == 0:
-                print(f"board {b} won on col {idx}")
+                #print(f"board {b} won on col {idx}")
                 winning_boards.add(b)        
-    print("players",len(playing_boards),"winners",len(winning_boards))
-    print("game_boards",len(game_boards))
-
-    print("playing_boards",playing_boards)
-    print("winner_boards",winning_boards)
     
-    if len(playing_boards - winning_boards) == 0:
-        print("everyone won")
+    # exit game if all boards have won
+    if len(winning_boards) == len(boards):
         break
     
-    losers = (playing_boards - winning_boards)
-    print("losers", losers)
+    # record boards not yet won, so we can identify last board standing.
+    losers = [board for board in range(len(boards)) if board not in winning_boards]
 
-
-# 27160 too high
-# 38412 too high
-print("losers",len(losers))
-pprint(game_boards[list(losers)[0]])
-
-score = sum([sum(row) for row in game_boards[losers.pop()][0]])
+rows, cols = game_boards[losers.pop()]
+score = sum([sum(row) for row in rows])
 print("#2",score*play)
-

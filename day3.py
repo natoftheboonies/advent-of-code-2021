@@ -36,7 +36,7 @@ def dec_from_bits(bits):
 
 # part 1, find most/least common bit for each number
 
-tipped = list(zip(*grid[::-1]))
+tipped = list(zip(*grid))
 maxes = [max_bit(row) for row in tipped]
 mins = [min_bit(row) for row in tipped]
 
