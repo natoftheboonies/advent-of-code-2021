@@ -19,162 +19,102 @@ for line in puzzle:
     left, right = [x.strip() for x in line.split('|')]
     entries.append((left.split(), right.split()))
 
+# digits 1, 4, 7, and 8 have signal lengths 2, 4, 3, and 7
 count_simple = 0
 for left, right in entries:
-    count_simple += len([obs for obs in right if len(obs) in (2, 3, 4, 7)])
+    count_simple += len([obs for obs in right if len(obs) in (2, 4, 3, 7)])
 
 print('#1', count_simple)
 
-
-# so we figure out which characters make which number with left
-# and then decode value with right.
-
-"""
- dddd
-e    a
-e    a
- ffff
-g    b
-g    b
- cccc
-"""
-
-example = 'acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab'
-# known
-# 1 = ab
-# 7 = dab
-# 4 = eafb
-# 8 = acdegfb (ignore)
-
-# 'd' is the top from 7 dab - 1 ab
-
-
 def decoder(patterns, output):
 
-
     signals = [set(list(c)) for c in patterns]
-    "cdfeb fcadb cdfeb cdbaf"
-    decode_me = [set(list(x)) for x in output]
+    output_values = [set(list(x)) for x in output]
+
+    # compute sets indicating each signal, 0-9
+    sig = [None]*10
+
+    # length : [possible signals]
+    # 2: [1], 3: [7], 4: [4], 5: [2, 3, 5], 6: [0, 6, 9], 7: [8]
 
     len7 = [s for s in signals if len(s)==7]
     assert len(len7) == 1
-    sig8 = len7 = len7.pop()
+    sig[8] = len7 = len7.pop()
 
     len4 = [s for s in signals if len(s)==4]
     assert len(len4) == 1
-    sig4 = len4 = len4.pop()
+    sig[4] = len4 = len4.pop()
 
     len3 = [s for s in signals if len(s)==3]
     assert len(len3) == 1
-    sig7 = len3 = len3.pop()
+    sig[7] = len3 = len3.pop()
 
     len2 = [s for s in signals if len(s)==2]
     assert len(len2) == 1
-    sig1 = len2 = len2.pop()
+    sig[1] = len2 = len2.pop()
 
     len6 = [s for s in signals if len(s)==6]
     assert len(len6) == 3
     len5 = [s for s in signals if len(s)==5]
     assert len(len5) == 3
 
+    # top is present in 7 but not in 1
+    t = sig[7] - sig[1]
 
-    t = len3 - len2
-    print(f"t is {t}")
+    # middle and left-upper are in 4 but not in 1
+    m_or_lu = sig[4]-sig[1]
 
-    # 'e' or 'f' is m and lu
-    m_or_lu = len4-len2
-    print(f"m_or_lu is {m_or_lu}")
-
-    # 2: [1], 3: [7], 4: [4], 5: [2, 3, 5], 6: [0, 6, 9], 7: [8]
-    # len7 - len6 indiates middle, left-down, right-down. 
-    # len2 indicates left-down, then 4 indicates middle, and remaining is right-down
-    # then remaining is len5 set. 
-    # len5 containing len2 indicates 3
+    # from len5 possibilities (2, 3, 5) only 3 contains 1
     for cand in len5:
-        if len2.issubset(cand):
-            sig3 = cand
-            print(f"sig3: {sig3}")
+        if sig[1].issubset(cand):
+            sig[3] = cand
 
-    # len4 - len1 indicates m OR lu
-    # len6 unique indicates m, ru, OR ld
-    # then we find m. and then lu
-    # known t, m, lu, rd, ru
-
-    # len6 missing m, ru, ld
+    # len6 are each missing one: middle, right-upper, or left-down
     m_or_ru_or_ld = set()
     for cand in len6:
-        asdf = len7-cand
-        m_or_ru_or_ld.add(asdf.pop())
+        missing = sig[8]-cand
+        m_or_ru_or_ld.add(missing.pop())
 
+    # identify middle by intersection
     m = m_or_lu.intersection(m_or_ru_or_ld)
+    # and left-upper by subtraction
     lu = m_or_lu - m
 
-    print(f"t {t}, m {m}, lu {lu}")
-
+    # now find left-upper and right-down with what we know:
     ru_or_ld = m_or_ru_or_ld - m
-    ru = ru_or_ld.intersection(len2)
+    ru = ru_or_ld.intersection(sig[1])
     ld = ru_or_ld - ru
-    rd = len2 - ru
 
-    print(f"ru {ru}, rd {rd},  ld {ld}")
+    # to complete positions:
+    rd = sig[1] - ru
+    d = sig[3] - sig[7] - m
 
-    d = sig3 - len3 - m
-    print(f"d {d}")
-
-    # resolve 0, 6, 9
+    # resolve 0, 6, 9 as we know middle, right-upper and left-down
     for cand in len6:
-        print("decode6",lu,cand)
+        # subset because m is set, not char
         if not m.issubset(cand):
-            sig0 = cand
-        elif not ld.issubset(cand):
-            sig9 = cand
+            sig[0] = cand
         elif not ru.issubset(cand):
-            sig6 = cand
+            sig[6] = cand
+        elif not ld.issubset(cand):
+            sig[9] = cand
 
-    # resolve 2, 3, 5
+    # resolve 2, 3, 5 using missing sides
     for cand in len5:
         if not lu.issubset(cand):
             if not ld.issubset(cand):
-                print(lu, cand, sig3)
-                assert sig3 == cand
+                # already identified
+                assert sig[3] == cand
             else:
-                sig2 = cand
+                sig[2] = cand
         else:
-            sig5 = cand
+            sig[5] = cand
 
+    # all signals resolved. decode the display
+    display = [str(sig.index(digit)) for digit in output_values]
 
+    return int(''.join(display))
 
-    answer = list()
-    for blah in decode_me:
-        if blah == sig0:
-            answer.append(0)
-        elif blah == sig1:
-            answer.append(1)
-        elif blah == sig2:
-            answer.append(2)
-        elif blah == sig3:
-            answer.append(3)
-        elif blah == sig4:
-            answer.append(4)
-        elif blah == sig5:
-            answer.append(5)
-        elif blah == sig6:
-            answer.append(6)
-        elif blah == sig7:
-            answer.append(7)
-        elif blah == sig8:
-            answer.append(8)
-        elif blah == sig9:
-            answer.append(9)        
-        else:
-            raise RuntimeError(f'unknown signal {blah}')
-
-
-    print(answer)
-    return int(''.join([str(a) for a in answer]))
-
-total_output = 0
-for a, b in entries:
-    total_output += decoder(a, b)
+total_output = sum([decoder(*entry) for entry in entries])
 
 print("#2",total_output)
