@@ -26,7 +26,7 @@ draw = [int(x) for x in input[0].split(",")]
 
 boards = []
 for line in input[1:]:
-    
+
     if line.strip() == '':
         board = list()
         boards.append(board)
@@ -34,7 +34,7 @@ for line in input[1:]:
         board.append([int(x) for x in line.split()])
 
 
-game_boards = list() # of tuple (rows, cols)
+game_boards = list()  # of tuple (rows, cols)
 for board in boards:
     # UGH last bug was a bad tipped
     tipped = list(list(tup) for tup in zip(*board))
@@ -63,14 +63,14 @@ for play in draw:
             if len(col) == 0:
                 #print(f"board {b} won on col {idx}")
                 winning_boards.add(b)
-    
+
     if winning_boards:
         winner = list(winning_boards)[0]
         rows, cols = game_boards[winner]
         score = sum([sum(row) for row in rows])
-        break      
+        break
 
-print("#1",score*play)
+print("#1", score*play)
 
 # continue where we left off
 for play in draw[draw.index(play)+1:]:
@@ -84,10 +84,10 @@ for play in draw[draw.index(play)+1:]:
         for col in cols:
             if play in col:
                 col.remove(play)
-    
+
     for b, (rows, cols) in enumerate(game_boards):
         if b in winning_boards:
-            continue        
+            continue
         for idx, row in enumerate(rows):
             if len(row) == 0:
                 #print(f"board {b} won on row {idx}")
@@ -95,15 +95,16 @@ for play in draw[draw.index(play)+1:]:
         for idx, col in enumerate(cols):
             if len(col) == 0:
                 #print(f"board {b} won on col {idx}")
-                winning_boards.add(b)        
-    
+                winning_boards.add(b)
+
     # exit game if all boards have won
     if len(winning_boards) == len(boards):
         break
-    
+
     # record boards not yet won, so we can identify last board standing.
-    losers = [board for board in range(len(boards)) if board not in winning_boards]
+    losers = [board for board in range(
+        len(boards)) if board not in winning_boards]
 
 rows, cols = game_boards[losers.pop()]
 score = sum([sum(row) for row in rows])
-print("#2",score*play)
+print("#2", score*play)

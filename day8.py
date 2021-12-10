@@ -26,6 +26,7 @@ for left, right in entries:
 
 print('#1', count_simple)
 
+
 def decoder(patterns, output):
 
     signals = [set(list(c)) for c in patterns]
@@ -37,25 +38,25 @@ def decoder(patterns, output):
     # length : [possible signals]
     # 2: [1], 3: [7], 4: [4], 5: [2, 3, 5], 6: [0, 6, 9], 7: [8]
 
-    len7 = [s for s in signals if len(s)==7]
+    len7 = [s for s in signals if len(s) == 7]
     assert len(len7) == 1
     sig[8] = len7 = len7.pop()
 
-    len4 = [s for s in signals if len(s)==4]
+    len4 = [s for s in signals if len(s) == 4]
     assert len(len4) == 1
     sig[4] = len4 = len4.pop()
 
-    len3 = [s for s in signals if len(s)==3]
+    len3 = [s for s in signals if len(s) == 3]
     assert len(len3) == 1
     sig[7] = len3 = len3.pop()
 
-    len2 = [s for s in signals if len(s)==2]
+    len2 = [s for s in signals if len(s) == 2]
     assert len(len2) == 1
     sig[1] = len2 = len2.pop()
 
-    len6 = [s for s in signals if len(s)==6]
+    len6 = [s for s in signals if len(s) == 6]
     assert len(len6) == 3
-    len5 = [s for s in signals if len(s)==5]
+    len5 = [s for s in signals if len(s) == 5]
     assert len(len5) == 3
 
     # top is present in 7 but not in 1
@@ -115,6 +116,7 @@ def decoder(patterns, output):
 
     return int(''.join(display))
 
+
 total_output = sum([decoder(*entry) for entry in entries])
 
-print("#2",total_output)
+print("#2", total_output)

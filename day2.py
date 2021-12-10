@@ -16,7 +16,7 @@ instructions = list()
 for line in puzzle:
     direction, distance = line.split()
     distance = int(distance)
-    instructions.append((direction,distance))
+    instructions.append((direction, distance))
 
 forward = 0
 depth = 0

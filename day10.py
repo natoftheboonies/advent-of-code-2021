@@ -11,7 +11,7 @@ puzzle = """[({(<(())[]>[[{[]{<()<>>
 <{([([[(<>()){}]>(<<{{
 <{([{{}}[<[[[<>{}]]]>[]]""".splitlines()
 
-SCORES = {')': 3, ']': 57, '}': 1197, '>': 25137 }
+SCORES = {')': 3, ']': 57, '}': 1197, '>': 25137}
 
 PAIRS = {'(': ')', '{': '}', '[': ']', '<': '>'}
 
@@ -31,8 +31,8 @@ for line in puzzle:
         elif char in PAIRS.values():
             left = stack.pop()
             if PAIRS[left] != char:
-                score += SCORES[char]   
-                break             
+                score += SCORES[char]
+                break
     else:
         while stack:
             left = stack.pop()

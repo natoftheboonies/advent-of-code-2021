@@ -7,7 +7,7 @@ last = depths[0]
 for depth in depths[1:]:
     if depth > last:
         count_increasing += 1
-    last = depth        
+    last = depth
 
 print("#1", count_increasing)
 
