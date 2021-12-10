@@ -11,24 +11,19 @@ puzzle = """[({(<(())[]>[[{[]{<()<>>
 <{([([[(<>()){}]>(<<{{
 <{([{{}}[<[[[<>{}]]]>[]]""".splitlines()
 
-SCORE = {')': 3,
-    ']': 57,
-    '}': 1197,
-    '>': 25137
-}
+SCORES = {')': 3, ']': 57, '}': 1197, '>': 25137 }
 
-PAIRS = {'(': ')', '{':'}', '[':']', '<':'>'}
+PAIRS = {'(': ')', '{': '}', '[': ']', '<': '>'}
 
-COSTS = {')':1, ']':2, '}':3, '>':4}
+COSTS = {')': 1, ']': 2, '}': 3, '>': 4}
 
 puzzle = readinput(10)
 
 total_score = 0
 costs = list()
 
-for id, line in enumerate(puzzle):
-    score = 0
-    cost = 0
+for line in puzzle:
+    score = cost = 0
     stack = list()
     for char in line:
         if char in PAIRS.keys():
@@ -36,24 +31,18 @@ for id, line in enumerate(puzzle):
         elif char in PAIRS.values():
             left = stack.pop()
             if PAIRS[left] != char:
-                score += SCORE[char]   
+                score += SCORES[char]   
                 break             
     else:
-        print(stack)
         while stack:
             left = stack.pop()
             cost *= 5
             cost += COSTS[PAIRS[left]]
-        print(cost)
     if cost > 0:
         costs.append(cost)
     if score > 0:
-        #print(id, score)
         total_score += score
 
-print("#1",total_score)
-print("#2",sorted(costs)[len(costs)//2])
+print("#1", total_score)
 
-
-
-
+print("#2", sorted(costs)[len(costs)//2])
