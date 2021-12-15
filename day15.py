@@ -11,7 +11,7 @@ puzzle = """1163751742
 1293138521
 2311944581""".splitlines()
 
-puzzle = readinput(15)
+#puzzle = readinput(15)
 
 DIRS = ((0, 1), (1, 0), (0, -1), (-1, 0))
 
@@ -25,31 +25,34 @@ goal = max(maze)
 
 # hmm, what are those nice search algorithms?
 
-visited = {start: 0}  # node : cost
-explore = [start]
+# floyd-warshall via #https://www.hackerearth.com/practice/algorithms/graphs/shortest-path-algorithms/tutorial/
 
-counter = 0
+dists = dict()
 
-while explore:
-    counter += 1
-    current = explore.pop()
-    cost = visited[current]
+
+def find_dist(node_i, node_j):
+    global dists, maze
+    if node_i == node_j:
+        return 0
     for d in DIRS:
-        move = (current[0]+d[0], current[1]+d[1])
-        if move not in maze:
-            continue
-        move_cost = maze[move]
-        if move not in visited:
-            explore.append(move)
-            visited[move] = cost+move_cost
-        else:
-            # if cost is cheaper, do re-visit
-            if cost+move_cost < visited[move]:
-                explore.append(move)
-                visited[move] = cost+move_cost
+        if (node_i[0]+d[0], node_i[1]+d[1]) == node_j:
+            return maze.get(node_j, 99999)
+    if (node_i, node_j) in dists:
+        return dists[(node_i, node_j)]
+    return 99999
 
-    if counter % 5000 == 0:
-        print(f"{counter} with queue {len(explore)}")
 
+n = len(maze)
+for k in range(n):
+    for i in range(n):
+        for j in range(n):
+            node_i = (i//10, (i % 10))
+            node_j = (j//10, (j % 10))
+            node_k = (k//10, (k % 10))
+            dists[(node_i, node_j)] = min(find_dist(node_i, node_j),
+                                          find_dist(node_i, node_k)+find_dist(node_k, node_j))
+
+print(dists[(start, goal)])
 # 30131 too high
-print(visited[goal])
+# correct: 769
+# print(visited[goal])
