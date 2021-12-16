@@ -1,5 +1,6 @@
-import sys
 from aoc import readinput
+from collections import deque
+import heapq
 
 puzzle = """1163751742
 1381373672
@@ -14,6 +15,7 @@ puzzle = """1163751742
 
 puzzle = readinput(15)
 
+DIRS = ((0, 1), (1, 0), (0, -1), (-1, 0))
 
 maze = dict()
 for y, line in enumerate(puzzle):
@@ -23,89 +25,78 @@ for y, line in enumerate(puzzle):
 start = (0, 0)
 goal = max(maze)
 
-# let's just recurse with cache
+# hmm, what are those nice search algorithms?
+# dijkstra's: https://www.youtube.com/watch?v=pVfj6mxhdMw
 
-dists = dict()
+shortest = {start: 0}
 
+h = []
+heapq.heappush(h, (0, (0, 0)))
 
-def cost_to_node(node_i):
-    global dists, maze
-    if node_i in dists:
-        return dists[node_i]
-    # if we have arrived, go no further. return cost of goal
-    if node_i == goal:
-        return maze[goal]
-    # if we are out of bounds, return wall
-    if node_i not in maze:
-        return 99999
-    # otherwise, cost plus minimum cost of right or below
-    cost_right = cost_to_node((node_i[0]+1, node_i[1]))
-    cost_below = cost_to_node((node_i[0], node_i[1]+1))
-    min_cost = min(cost_right, cost_below)
-    # start is free
-    if node_i == start:
-        return min_cost
-    dists[node_i] = maze[node_i] + min_cost
-    return dists[node_i]
+while h:
+    base_cost, last = heapq.heappop(h)
+    x, y = last
+    if x > goal[0] or x < 0 or y > goal[1] or y < 0:
+        continue
+    if last == goal:
+        break
+    neighbors = dict()
+    # calc distance of each neighbor
+    for d in DIRS:
+        x, y = last[0]+d[0], last[1]+d[1]
+        if (x, y) not in maze:
+            continue
+        neighbor_cost = base_cost + maze[(x, y)]
+        if shortest.get((x, y), 99999) > neighbor_cost:
+            shortest[(x, y)] = neighbor_cost
+            heapq.heappush(h, (neighbor_cost, (x, y)))
 
+print("#1", base_cost)
 
-print("#1", cost_to_node(start))
-# 30131 too high
-# correct: 769
-# print(visited[goal])
-
-sys.setrecursionlimit(10000)
-
-# expand the grid
-max_x = max([x for x, y in maze])+1
-max_y = max([y for x, y in maze])+1
-print(f"max {max_x} {max_y}")
-
-goal = (max_x*5-1, max_y*5-1)
 print(goal)
 
-dists = dict()
 
-
-def computed_cost(node_i):
-    base = (node_i[0] % max_x, node_i[1] % max_y)
-    inc_x = node_i[0]//max_x
-    inc_y = node_i[1]//max_y
-    cost = maze[base]+inc_x+inc_y
-    # never cost 0
+def part2_cost(node):
+    #global goal
+    x, y = node
+    base_x = x % (goal[0]+1)
+    #print(f"{base_x} for {x}")
+    mult_x = x // (goal[0]+1)
+    base_y = y % (goal[1]+1)
+    mult_y = y // (goal[1]+1)
+    #print(maze[(base_x, base_y)], base_x, mult_x)
+    cost = maze[(base_x, base_y)] + mult_x + mult_y
     if cost > 9:
-        return cost-9
+        cost -= 9
     return cost
 
 
-#assert computed_cost((49, 49)) == 9
+#assert part2_cost((49, 49)) == 9
 
+goal2 = tuple((x+1)*5-1 for x in goal)
+print(goal2)
 
-def cost_to_node(node_i):
-    global dists, maze
-    if node_i in dists:
-        return dists[node_i]
+shortest = {start: 0}
 
-    # new out of bounds
-    if node_i[0] >= max_x*5 or node_i[1] >= max_y*5:
-        return 999999
+h2 = []
+heapq.heappush(h2, (0, (0, 0)))
 
-    # if we have arrived, go no further. return cost of goal
-    if node_i == goal:
-        return computed_cost(node_i)
+while h2:
+    base_cost, last = heapq.heappop(h2)
+    x, y = last
+    if x > goal2[0] or x < 0 or y > goal2[1] or y < 0:
+        continue
+    if last == goal2:
+        break
+    neighbors = dict()
+    # calc distance of each neighbor
+    for d in DIRS:
+        x, y = last[0]+d[0], last[1]+d[1]
+        if x > goal2[0] or x < 0 or y > goal2[1] or y < 0:
+            continue
+        neighbor_cost = base_cost + part2_cost((x, y))
+        if shortest.get((x, y), 999999) > neighbor_cost:
+            shortest[(x, y)] = neighbor_cost
+            heapq.heappush(h2, (neighbor_cost, (x, y)))
 
-    # otherwise, cost plus minimum cost of right or below
-    cost_right = cost_to_node((node_i[0]+1, node_i[1]))
-    cost_below = cost_to_node((node_i[0], node_i[1]+1))
-    cost_above = cost_to_node((node_i[0], node_i[1]-1))
-    cost_left = cost_to_node((node_i[0]-1, node_i[1]))
-    min_cost = min(cost_right, cost_below, cost_above, cost_left)
-    # start is free
-    if node_i == start:
-        return min_cost
-    dists[node_i] = computed_cost(node_i) + min_cost
-    return dists[node_i]
-
-
-# 2970 too high
-print("#2", cost_to_node(start))
+print("#2", base_cost)
