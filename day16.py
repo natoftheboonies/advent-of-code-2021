@@ -31,8 +31,12 @@ def hex_to_bin(input):
     return result
 
 
+version_sum = 0
+
+
 def packet_decoder(packet, ptr=0):
     """well then"""
+    global version_sum
 
     def decode_literal(stream, ptr):
         bits = ''
@@ -55,10 +59,10 @@ def packet_decoder(packet, ptr=0):
         stream = stream[3:]
         return (ver, type), ptr
 
-    version_sum = 0
+    # if ptr > len(packet):
+    #     return (0,), ptr
 
-    if ptr > len(packet):
-        return (0,), ptr
+    value = 0
 
     (ver, type), ptr = decode_header(packet, ptr)
     print(f"ver {ver}")
@@ -66,48 +70,62 @@ def packet_decoder(packet, ptr=0):
     if type == 4:
         literal, ptr = decode_literal(packet, ptr)
         print(f"lit {literal}")
-        # return literal, ptr
+        value = literal
     else:
-        # operators
+        # operators with sub-packets
+        sub_packets = []
         length_type = int(packet[ptr])
         ptr += 1
         print(f"op type {type}-{length_type}")
         if length_type == 0:
             # 15-bit number indicating length of subpackets
-            sub_bits = int(packet[ptr:ptr+15], 2)
+            len_subs = int(packet[ptr:ptr+15], 2)
             ptr += 15
-            print(f"read {sub_bits} bits")
-            print(f"{len(packet)-ptr} bits available")
-            if sub_bits > (len(packet)-ptr):
-                return (version_sum,), ptr
-            end = ptr+sub_bits
-            bug = packet[ptr:end]
-            print(f"sub {sub_bits}", len(bug))
+            end = ptr+len_subs
             while ptr < end:
-                if len(bug) == 0:
-                    break
-                header, ptr = packet_decoder(packet, ptr)
-                version_sum += header[0]
+                sub_value, ptr = packet_decoder(packet, ptr)
+                sub_packets.append(sub_value)
 
         elif length_type == 1:
             # 11-bit number representing the number of sub-packets
-            sub_packets = int(packet[ptr:ptr+11], 2)
+            num_subs = int(packet[ptr:ptr+11], 2)
             ptr += 11
-            for _ in range(sub_packets):
-                header, ptr = packet_decoder(packet, ptr)
-                version_sum += header[0]
+            for _ in range(num_subs):
+                sub_value, ptr = packet_decoder(packet, ptr)
+                sub_packets.append(sub_value)
 
-    return (version_sum,), ptr
+        # now do operator math
+        if type == 0:
+            # sum
+            value = sum(sub_packets)
+        elif type == 1:
+            # product
+            value = 1
+            for i in sub_packets:
+                value *= i
+        elif type == 2:
+            # minimum
+            value = min(sub_packets)
+        elif type == 3:
+            # maximum
+            value = max(sub_packets)
+        elif type == 5:
+            # greater than
+            assert len(sub_packets) == 2
+            value = 1 if sub_packets[0] > sub_packets[1] else 0
+        elif type == 6:
+            # less than
+            assert len(sub_packets) == 2
+            value = 1 if sub_packets[0] < sub_packets[1] else 0
+        elif type == 7:
+            # equal to
+            assert len(sub_packets) == 2
+            value = 1 if sub_packets[0] == sub_packets[1] else 0
 
+    return value, ptr
 
-#lit1, ptr = packet_decoder(hex_to_bin("D2FE28"))
-
-#sample2 = packet_decoder(hex_to_bin("38006F45291200"))
-#sample2 = packet_decoder(hex_to_bin("EE00D40C823060"))
-
-puzzle = "8A004A801A8002F478"
 
 puzzle = readinput(16)[0]
 result = packet_decoder(hex_to_bin(puzzle))
-# 886 too low
-print("#1", result[0][0])
+print("#1", version_sum)
+print("#2", result[0])
