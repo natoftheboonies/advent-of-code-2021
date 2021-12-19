@@ -177,7 +177,9 @@ def compute_distances_3d(points):
 puzzle = readinput('19ex')
 #puzzle = readinput(19)
 scanners = parse(puzzle)
-print("total obs", sum(len(x) for x in scanners.values()))
+total_obs = sum(len(x) for x in scanners.values())
+print("total obs", total_obs)
+
 
 # find rotations of scanners relative to other scanner
 scanner_rots = dict()
@@ -195,14 +197,14 @@ for i, s0 in enumerate(scanner_ids):
             matches = len(s0_dist.intersection(s_dist))
             #print(s, i, matches)
             if matches >= 12*11:
-                print(f"{s0} overlaps with {s}")
+                #print(f"{s0} overlaps with {s}")
                 best_rot = rot
                 best_matches = matches
                 scanner_rots[(s0,s)] = best_rot
                 break
 
-print("rots:")
-pprint(scanner_rots)
+#print("rots:")
+#pprint(scanner_rots)
 
 # now what? i guess we gotta figure out *which* beacons overlap.
 # we know which pairs overlap, 
@@ -210,9 +212,13 @@ pprint(scanner_rots)
 scanner_pos = dict()
 
 all_points = set()
-for k,v in scanners.items():
+for s,v in scanners.items():
     for p in v:
-        all_points.add((k, p))
+        all_points.add((s, p))
+
+print("ap",len(all_points))
+
+equivalences = set()
 
 for s0, s1 in scanner_rots:
     rot = scanner_rots[(s0,s1)]
@@ -223,13 +229,37 @@ for s0, s1 in scanner_rots:
             s1_dists = {rotate3d(dist_vector_3d(s1_point, p),rot) for p in scanners[s1]}
             if len(dists.intersection(s1_dists)) >= 12:
                 #print(f"{s0_point} matches {s1_point}")
+                equivalences.add(((s0, s0_point),(s1, s1_point)))
                 relative_distance = dist_vector_3d(s0_point, rotate3d(s1_point,rot))
+                if (s0,s1) in scanner_pos:
+                    assert relative_distance == scanner_pos[s0,s1]
                 scanner_pos[s0,s1] = relative_distance
                 matched = True
 
+print("eq",len(equivalences)) 
 
+visited = set()
+unique = 0
+#print(scanner_pos)
 
-print(scanner_pos)
+for s in scanners:
+    for p in scanners[s]:
+        matches = [eq for eq in equivalences if eq[0] == (s,p) or eq[1] == (s,p)]
+        #print("for",(s,p),"found",matches)
+
+        already_counted = False
+        for m in matches:
+            if m[0][0] in visited or m[1][0] in visited:
+                #print("already counted",m)
+                already_counted = True
+                if (s,p) in all_points:
+                    all_points.remove((s,p))
+        if not already_counted:
+            unique += 1
+    visited.add(s)
+
+# i don't know why this overcounts. 
+print("#1,",unique,len(all_points))
 
 """
 
