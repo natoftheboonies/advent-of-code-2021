@@ -103,7 +103,7 @@ ROTATE_3D = [
 #   ([x, y, z]) => [z, x, y],
     ((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
     ((0, 1, 0), (0, 0, 1), (1, 0, 0)), 
-    ((0, 0, 1), (1, 0, 0), (0, 0, 1)), 
+    ((0, 0, 1), (1, 0, 0), (0, 1, 0)), 
 #   ([x, y, z]) => [-x, z, y],
 #   ([x, y, z]) => [z, y, -x],
 #   ([x, y, z]) => [y, -x, z],
@@ -149,6 +149,7 @@ ROTATE_3D = [
 ]
 
 assert len(ROTATE_3D) == 24
+assert len(set(ROTATE_3D)) == 24
 
 def rotate3d(point, matrix):
     x, y, z = point
