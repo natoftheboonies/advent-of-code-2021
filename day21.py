@@ -1,9 +1,8 @@
-from itertools import count
 
 puzzle = (4, 8)
-puzzle = [8, 6]
+puzzle = (8, 6)
 
-#pos = [x-1 for x in puzzle]
+# part 1
 pos = list(puzzle)
 
 score = [0, 0]
@@ -12,7 +11,7 @@ roll = 1
 
 player = 0
 
-while max(score) < 30:
+while max(score) < 1000:
     move = 3*roll+3
     roll += 3
     pos[player] = (pos[player] + move) % 10
@@ -24,10 +23,7 @@ while max(score) < 30:
 
 print("#1", (roll-1)*score[player])
 
-# oof tribonacci recursive stuffs
-
-# from one games state, what are the possible next ones?
-# and we just need how many of those did player n win?
+# part 2
 
 # combinations of 1,2,3
 POSSIBLE_ROLLS = list()
@@ -41,51 +37,39 @@ assert len(POSSIBLE_ROLLS) == 27
 # but they roll 3x, and the order does not matter (for scores.
 # it totally matters for # universes).
 
-game_cache = dict()
+game_memo = dict()
 
 
-def move(pos1, pos2, score1, score2, player):
-    game_state = (pos1, pos2, score1, score2, player)
-    if game_state in game_cache:
-        return game_cache[game_state]
+def move(pos, score, player):
+    game_state = (pos, score, player)
+    if game_state in game_memo:
+        return game_memo[game_state]
 
     wins = [0, 0]
 
-    start_pos1, start_pos2 = pos1, pos2
-    start_score1, start_score2 = score1, score2
+    start_pos = pos
+    start_score = score
 
     for x, y, z in POSSIBLE_ROLLS:
-        pos1, pos2 = start_pos1, start_pos2
-        score1, score2 = start_score1, start_score2
-        if player == 0:
-            pos1 += x+y+z
-            pos1 %= 10
+        pos = list(start_pos)
+        score = list(start_score)
 
-            score1 += 10 if pos1 == 0 else pos1
+        pos[player] += x+y+z
+        pos[player] %= 10
 
-            if score1 >= 21:
-                wins[player] += 1
-            else:
-                recursive_wins = move(pos1, pos2, score1,
-                                      score2, (player+1) % 2)
-                for p in 0, 1:
-                    wins[p] += recursive_wins[p]
+        score[player] += 10 if pos[player] == 0 else pos[player]
+
+        if score[player] >= 21:
+            wins[player] += 1
         else:
-            pos2 += x+y+z
-            pos2 %= 10
+            recursive_wins = move(tuple(pos), tuple(score),
+                                  (player+1) % 2)
+            for p in 0, 1:
+                wins[p] += recursive_wins[p]
 
-            score2 += 10 if pos2 == 0 else pos2
-
-            if score2 >= 21:
-                wins[player] += 1
-            else:
-                recursive_wins = move(pos1, pos2, score1,
-                                      score2, (player+1) % 2)
-                for p in 0, 1:
-                    wins[p] += recursive_wins[p]
-    game_cache[game_state] = wins
+    game_memo[game_state] = wins
     return wins
 
 
-wins = move(*puzzle, 0, 0, 0)
+wins = move(puzzle, (0, 0), 0)
 print("#2", max(wins))
