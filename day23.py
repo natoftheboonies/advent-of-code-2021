@@ -26,6 +26,10 @@ total possile moves
 import heapq  
 # (dist, estimate, state)
 
+
+from functools import cache
+
+@cache
 def estimate(maze):
     hallway, *rooms = maze
     total_cost = 0
@@ -136,7 +140,9 @@ def next_moves(maze):
                     new_rooms[dest_room_id] = new_dest_room
                     new_state = (hallway, *new_rooms)
                     possible.append((move_cost, new_state))  
-
+    # if we have a move into the right room, just do that!
+    if len(possible) > 0:
+        return possible
     # dudes in wrong rooms (or if guy below is wrong) can move to the hallway
     for j, room in enumerate(rooms):
         room_id = (j+1)*2
@@ -198,39 +204,6 @@ def next_moves(maze):
 
     return possible
                 
-next_moves(almost)
-
-almost = (('','','','','','','','','','A',''),('','A'),('B','B'),('C','C'),('D','D'))
-next_moves(almost)
-
-blocked = (('','','','','','','C','','','A',''),('','A'),('B','B'),('C','C'),('D','D'))
-assert next_moves(blocked) == []
-
-blocked = (('','D','','','','','C','','','',''),('A','A'),('B','B'),('C','C'),('','D'))
-assert next_moves(blocked) == []
-
-print("---")
-unblocked = (('','A','','B','','B','','C','','','D'),('','A'),('',''),('','C'),('','D'))
-assert len(next_moves(unblocked)) == 5
-
-hop  = (('','C','','','','','','','','',''),('A','A'),('','B'),('B','C'),('D','D'))
-print(next_moves(hop))
-
-hop  = (('C','C','','','','','','','','',''),('A','A'),('','B'),('','B'),('D','D'))
-step = next_moves(hop)
-move = step[0][1]
-print(move, estimate(move))
-step = next_moves(move)
-move = step[0][1]
-print(move, estimate(move))
-step = next_moves(move)
-move = step[0][1]
-print(move, estimate(move))
-
-exit  = (('B','','','','','','','','','',''),('A','A'),('B','C'),('','C'),('D','D'))
-# for move in next_moves(exit):
-#     print(move, estimate(move[1]))
-
 
 # ok let's try the search
 
@@ -242,7 +215,7 @@ print(' --- for reals ---')
 
 def search(maze):
     # keep track of minimum cost to each node
-    shortest = {maze: 0}
+    shortest = {maze: 0+estimate(maze)}
 
 
     h = []
@@ -263,9 +236,10 @@ def search(maze):
 
         for move in next_moves(last):
             move_cost, next_state = move
-            if next_state in shortest and (base_cost+move_cost) > shortest[next_state]:
+            a_star = base_cost+move_cost+estimate(next_state)
+            if next_state in shortest and a_star > shortest[next_state]:
                 continue
-            shortest[next_state] = base_cost+move_cost            
+            shortest[next_state] = a_star           
             heapq.heappush(h, (base_cost+move_cost, estimate(next_state), next_state))
 
     raise RuntimeError(f"never reached goal {goal}")
@@ -294,17 +268,17 @@ def parse(input):
         rooms.append(new_room)
     return (tuple(hallway),*rooms)
 
-real = """#############
-#...........#
-###B#C#B#D###
-  #A#D#C#A#
-  #########""".splitlines()
-
 
 real = """#############
 #...........#
 ###D#A#C#D###
   #B#C#B#A#
+  #########""".splitlines()
+
+sample = """#############
+#...........#
+###B#C#B#D###
+  #A#D#C#A#
   #########""".splitlines()
 
 
