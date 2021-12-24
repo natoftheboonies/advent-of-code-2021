@@ -60,13 +60,13 @@ almost = (('','D','','','','','','','','',''),('A','A'),('B','B'),('C','C'),('',
 #assert estimate(almost) == 8000
  
 
-def check_state(maze,message=''):
+def Xcheck_state(maze,message=''):
     hallway, *rooms = maze
     for room in rooms:
         for j in range(len(room)-1):
             if room[j].isalpha() and room[j+1] == '':
                 #print("bad state:", maze)
-                return False
+                #return False
                 raise RuntimeError("whazzap? "+message)
     return True
 
@@ -122,9 +122,9 @@ def next_moves(maze):
                 new_rooms = list(rooms)
                 new_rooms[room_id] = new_room
                 next_state = (tuple(new_hallway), *new_rooms)
-                if check_state(next_state):
+                #if check_state(next_state):
                 #print(move_cost, next_state)
-                    possible.append((move_cost, next_state))
+                possible.append((move_cost, next_state))
 
     # dudes in rooms can move to their room if path is free
     for j, room in enumerate(rooms):
@@ -132,7 +132,10 @@ def next_moves(maze):
         for k, c in enumerate(room):
             if c == '':
                 continue
-            if c.isalpha() and DESTS[c] != room_id:
+            if c.isalpha():
+                if DESTS[c] == room_id:
+                    # right place, so not moving
+                    break
                 up = k+1
                 new_room = list(room)
                 new_room[k] = ''
@@ -149,6 +152,7 @@ def next_moves(maze):
                 if dest_room[0] == '' and all(d in ('', c) for d in dest_room) and all(h == '' for h in hall_to_check):
                     #print('hallway', hall_to_check)
                     cost = COSTS[c]
+                    new_dest_room = None
                     if c in dest_room:
                         c_at = dest_room.index(c)
                         if c_at > 0:
@@ -171,11 +175,9 @@ def next_moves(maze):
                     new_rooms[j] = new_room
                     new_rooms[dest_room_id] = new_dest_room
                     new_state = (hallway, *new_rooms)
-                    if check_state(new_state, f"moving {c} from {room}{j}[{k}] to {dest_room} like {new_dest_room} was {maze}"):
-                        possible.append((move_cost, new_state)) 
-                    break
-        else:
-            break
+                    #if True or check_state(new_state, f"moving {c} from {room}{j}[{k}] to {dest_room} like {new_dest_room} was {maze}"):
+                    possible.append((move_cost, new_state)) 
+                break
     # if we have a move into the right room, just do that!
     if len(possible) > 0:
         return possible
@@ -212,15 +214,26 @@ def next_moves(maze):
                         new_rooms = list(rooms)
                         new_rooms[j] = tuple(new_room)
                         new_state = (tuple(new_hallway),*new_rooms)
-                        if check_state(new_state):
-                            possible.append((move_cost, new_state))
+                        #if check_state(new_state):
+                        possible.append((move_cost, new_state))
 
 
     return possible
                 
 
 almost = (('D','','','','','','','','','',''),('A','A'),('B','B'),('C','C'),('','D'))
-print(next_moves(almost))
+almost = (('A', 'C', '', 'A', '', '', '', '', '', 'C', 'C'), 
+('B', 'D', 'D', 'A'), 
+('', '', 'B', 'D'), 
+('B', 'B', 'A', 'C'), 
+('', '', '', 'D'))
+
+#from pprint import pprint
+
+#pprint(next_moves(almost))
+# # for move in next_moves(almost):
+# #     pprint(next_moves(move[1]))    
+#sys.exit()
 
 # ok let's try the search
 
@@ -303,9 +316,9 @@ maze = parse(real)
 #print('start', blah)
 
 goal = (('',)*11,('A',)*2,('B',)*2,('C',)*2,('D',)*2)
-# result = search(maze, goal)
-# print("#1", result)
-# assert result == 14148
+result = search(maze, goal)
+print("#1", result)
+assert result == 14148
 
 sample = """#############
 #...........#
@@ -319,8 +332,6 @@ sample = """#############
 maze2 = (('',)*11,('B','D','D','A'), ('C','C','B','D'), ('B','B','A','C'),('D','A','C','A'))
 # real : 43814
 maze2 = (('',)*11,('D','D','D','B'), ('A','C','B','C'), ('C','B','A','B'),('D','A','C','A'))
-
 goal2 = (('',)*11,('A',)*4,('B',)*4,('C',)*4,('D',)*4)
 result = search(maze2, goal2)
 print("#2", result)
-# 40840 too low
