@@ -9,7 +9,7 @@ maze = (('',)*11,('B','A'),('C','D'),('B','C'),('D','A'))
 # doors at 2,4,6,8
 
 print(maze)
-
+import sys
 COSTS = {'A': 1, 'B': 10, 'C': 100, 'D': 1000}
 DESTS = {'A': 2, 'B': 4, 'C': 6, 'D': 8}
 
@@ -60,6 +60,16 @@ almost = (('','D','','','','','','','','',''),('A','A'),('B','B'),('C','C'),('',
 #assert estimate(almost) == 8000
  
 
+def check_state(maze,message=''):
+    hallway, *rooms = maze
+    for room in rooms:
+        for j in range(len(room)-1):
+            if room[j].isalpha() and room[j+1] == '':
+                #print("bad state:", maze)
+                return False
+                raise RuntimeError("whazzap? "+message)
+    return True
+
 def next_moves(maze):
     hallway, *rooms = maze
     possible = []
@@ -93,7 +103,8 @@ def next_moves(maze):
                         down = c_at
                         new_room = tuple(new_room) 
                     else:
-                        continue 
+                        print("full0?!?", c, maze)
+                        sys.exit() 
                 else:
                     new_room = list(rooms[room_id])
                     new_room[-1] = c
@@ -111,8 +122,9 @@ def next_moves(maze):
                 new_rooms = list(rooms)
                 new_rooms[room_id] = new_room
                 next_state = (tuple(new_hallway), *new_rooms)
+                if check_state(next_state):
                 #print(move_cost, next_state)
-                possible.append((move_cost, next_state))
+                    possible.append((move_cost, next_state))
 
     # dudes in rooms can move to their room if path is free
     for j, room in enumerate(rooms):
@@ -144,6 +156,7 @@ def next_moves(maze):
                             new_dest_room[c_at-1] = c
                             down = c_at
                         else:
+                            print("full!?!")
                             continue 
                     else:
                         new_dest_room = list(dest_room)
@@ -158,7 +171,11 @@ def next_moves(maze):
                     new_rooms[j] = new_room
                     new_rooms[dest_room_id] = new_dest_room
                     new_state = (hallway, *new_rooms)
-                    possible.append((move_cost, new_state))  
+                    if check_state(new_state, f"moving {c} from {room}{j}[{k}] to {dest_room} like {new_dest_room} was {maze}"):
+                        possible.append((move_cost, new_state)) 
+                    break
+        else:
+            break
     # if we have a move into the right room, just do that!
     if len(possible) > 0:
         return possible
@@ -195,7 +212,8 @@ def next_moves(maze):
                         new_rooms = list(rooms)
                         new_rooms[j] = tuple(new_room)
                         new_state = (tuple(new_hallway),*new_rooms)
-                        possible.append((move_cost, new_state))
+                        if check_state(new_state):
+                            possible.append((move_cost, new_state))
 
 
     return possible
@@ -285,9 +303,9 @@ maze = parse(real)
 #print('start', blah)
 
 goal = (('',)*11,('A',)*2,('B',)*2,('C',)*2,('D',)*2)
-result = search(maze, goal)
-print("#1", result)
-assert result == 14148
+# result = search(maze, goal)
+# print("#1", result)
+# assert result == 14148
 
 sample = """#############
 #...........#
@@ -300,7 +318,7 @@ sample = """#############
 # sample : 44169, i get 42169
 maze2 = (('',)*11,('B','D','D','A'), ('C','C','B','D'), ('B','B','A','C'),('D','A','C','A'))
 # real : 43814
-#maze2 = (('',)*11,('D','D','D','B'), ('A','C','B','C'), ('C','B','A','B'),('D','A','C','A'))
+maze2 = (('',)*11,('D','D','D','B'), ('A','C','B','C'), ('C','B','A','B'),('D','A','C','A'))
 
 goal2 = (('',)*11,('A',)*4,('B',)*4,('C',)*4,('D',)*4)
 result = search(maze2, goal2)
