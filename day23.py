@@ -38,7 +38,7 @@ def estimate(maze):
             cost = COSTS[c]
             dest = DESTS[c]
             # move to column and enter
-            total_cost += cost * (1 + abs(i-dest))
+            total_cost += cost * (3 + abs(i-dest))
     for r, room in enumerate(rooms):
         for i, c in enumerate(room):
             if c.isalpha():
@@ -48,22 +48,23 @@ def estimate(maze):
                 #print(f'{c} is in {c_room}')
                 if c_room != dest:
                     # move to room: up (+up?), lateral, down
-                    total_cost += cost * (2 + i + abs(c_room - dest))
+                    total_cost += cost * (2 + 2 + abs(c_room - dest))
     return total_cost
 
-print('estimate', estimate(maze))
+#print('estimate', estimate(maze))
 
 goal = (('',)*11,('A','A'),('B','B'),('C','C'),('D','D'))
 
 assert estimate(goal) == 0
 almost = (('','D','','','','','','','','',''),('A','A'),('B','B'),('C','C'),('','D'))
-assert estimate(almost) == 8000
+#assert estimate(almost) == 8000
+ 
 
-                
 def next_moves(maze):
     hallway, *rooms = maze
     possible = []
-    # dudes in hallway are stuck until path to their room
+
+    # dudes in hallway can move to their room if not blocked and space
     for i, c in enumerate(hallway):
         if c.isalpha():
             #move_cost = 0
@@ -82,13 +83,23 @@ def next_moves(maze):
                 continue
 
             room_id = dest//2-1
-            if rooms[room_id][0] == '' and rooms[room_id][1] in (c, ''):
-                if rooms[room_id][1] == '':
-                    down = 2
-                    new_room = ('',c)
+            if all(x in (c,'') for x in rooms[room_id]):
+                down = 0
+                if c in rooms[room_id]:
+                    c_at = rooms[room_id].index(c)
+                    if c_at > 0:
+                        new_room = list(rooms[room_id])
+                        new_room[c_at-1] = c
+                        down = c_at
+                        new_room = tuple(new_room) 
+                    else:
+                        continue 
                 else:
-                    down = 1
-                    new_room = (c, rooms[room_id][1])
+                    new_room = list(rooms[room_id])
+                    new_room[-1] = c
+                    down = len(new_room)
+                    new_room = tuple(new_room)    
+
                 move_cost = cost*(down + abs(dest-i))
 
                 new_hallway = []
@@ -106,16 +117,15 @@ def next_moves(maze):
     # dudes in rooms can move to their room if path is free
     for j, room in enumerate(rooms):
         room_id = (j+1)*2
-        if room[0].isalpha() or room[0] == '' and room[1].isalpha():
-            up = 1
-            c = room[0]
-            new_room = ('',room[1])
-            if room[0] == '':
-                up = 2
-                c = room[1]
-                new_room = ('','')
+        for k, c in enumerate(room):
+            if c == '':
+                continue
+            if c.isalpha() and DESTS[c] != room_id:
+                up = k+1
+                new_room = list(room)
+                new_room[k] = ''
+                new_room = tuple(new_room)
 
-            if DESTS[c] != room_id:
                 dest_room_id = DESTS[c]//2-1
                 dest_room = rooms[dest_room_id]
                 # move if hallway and destination free
@@ -124,14 +134,23 @@ def next_moves(maze):
                     hall_to_check = hallway[min(room_id,DESTS[c])+extra:max(room_id,DESTS[c])]
                 else:
                     hall_to_check = hallway[min(room_id,DESTS[c]):max(room_id,DESTS[c])+extra]
-                if dest_room[0] == '' and dest_room[1] in ('', c) and all(h == '' for h in hall_to_check):
+                if dest_room[0] == '' and all(d in ('', c) for d in dest_room) and all(h == '' for h in hall_to_check):
                     #print('hallway', hall_to_check)
                     cost = COSTS[c]
-                    down = 1
-                    new_dest_room = (c, dest_room[1])
-                    if dest_room[1] == '':
-                        down = 2
-                        new_dest_room = ('', c)
+                    if c in dest_room:
+                        c_at = dest_room.index(c)
+                        if c_at > 0:
+                            new_dest_room = list(dest_room)
+                            new_dest_room[c_at-1] = c
+                            down = c_at
+                        else:
+                            continue 
+                    else:
+                        new_dest_room = list(dest_room)
+                        new_dest_room[-1] = c
+                        down = len(new_dest_room)
+                    new_dest_room = tuple(new_dest_room) 
+
                     lateral = abs(DESTS[c]-room_id)
                     move_cost = cost * (up+lateral+down) 
                     
@@ -143,24 +162,24 @@ def next_moves(maze):
     # if we have a move into the right room, just do that!
     if len(possible) > 0:
         return possible
-    # dudes in wrong rooms (or if guy below is wrong) can move to the hallway
+    # dudes in wrong rooms (or if any guy below is wrong) can move to the hallway
     for j, room in enumerate(rooms):
         room_id = (j+1)*2
-        c = room[0]
-        up = 1
+        # find the first dude
+        for k, c in enumerate(room):
+            if c.isalpha():
+                up = k+1
+                break  
         # bottom or both good
-        # blocking bad
-        # bad
-        if c == '':
-            up = 2
-            c = room[1]
-            if c == '' or DESTS[c] == room_id:
-                # top empty, bottom empty or good, stay put
+
+        if c != '':
+            if DESTS[c] == room_id and all(below == c for below in room[k:]):
+                # c is in the right place
                 continue
             else:
-                #print("top empty, bottom bad", room_id, DESTS[c])
-                # top empty, bottom bad, move top
-                new_room = ('','')
+                # we need to move to hallway
+                new_room = list(room)
+                new_room[k] = ''
                 for lateral_dest in (0,1,3,5,7,9,10):
                     dir = 1 if room_id < lateral_dest else -1
                     blocked = False
@@ -174,36 +193,16 @@ def next_moves(maze):
                         new_hallway = list(hallway)
                         new_hallway[lateral_dest] = c 
                         new_rooms = list(rooms)
-                        new_rooms[j] = new_room
+                        new_rooms[j] = tuple(new_room)
                         new_state = (tuple(new_hallway),*new_rooms)
                         possible.append((move_cost, new_state))
 
 
-        elif c == room[1] and DESTS[c] == room_id:
-            # both good, stay put
-            continue
-        else:
-            # bad or bottom bad, move top
-            new_room = ('',room[1])
-            for lateral_dest in (0,1,3,5,7,9,10):
-                dir = 1 if room_id < lateral_dest else -1
-                blocked = False
-                for step in range(room_id+dir, lateral_dest+dir, dir):
-                    #print(hallway[step])
-                    if hallway[step].isalpha():
-                        blocked = True
-                if not blocked:
-                    lateral = abs(room_id - lateral_dest)
-                    move_cost = COSTS[c]*(up+lateral)
-                    new_hallway = list(hallway)
-                    new_hallway[lateral_dest] = c 
-                    new_rooms = list(rooms)
-                    new_rooms[j] = new_room
-                    new_state = (tuple(new_hallway),*new_rooms)
-                    possible.append((move_cost, new_state))
-
     return possible
                 
+
+almost = (('D','','','','','','','','','',''),('A','A'),('B','B'),('C','C'),('','D'))
+print(next_moves(almost))
 
 # ok let's try the search
 
@@ -213,7 +212,7 @@ print(' --- for reals ---')
 # for move in next_moves(maze):
 #     print(move, estimate(move[1]))
 
-def search(maze):
+def search(maze, goal):
     # keep track of minimum cost to each node
     shortest = {maze: 0+estimate(maze)}
 
@@ -285,5 +284,25 @@ sample = """#############
 maze = parse(real)
 #print('start', blah)
 
-search(maze)
+goal = (('',)*11,('A',)*2,('B',)*2,('C',)*2,('D',)*2)
+result = search(maze, goal)
+print("#1", result)
+assert result == 14148
 
+sample = """#############
+#...........#
+###B#C#B#D###
+  #D#C#B#A#
+  #D#B#A#C#
+  #A#D#C#A#
+  #########""".splitlines()
+
+# sample : 44169, i get 42169
+maze2 = (('',)*11,('B','D','D','A'), ('C','C','B','D'), ('B','B','A','C'),('D','A','C','A'))
+# real : 43814
+#maze2 = (('',)*11,('D','D','D','B'), ('A','C','B','C'), ('C','B','A','B'),('D','A','C','A'))
+
+goal2 = (('',)*11,('A',)*4,('B',)*4,('C',)*4,('D',)*4)
+result = search(maze2, goal2)
+print("#2", result)
+# 40840 too low
