@@ -1,3 +1,4 @@
+import sys
 from os import read
 from pprint import pprint
 from aoc import readinput
@@ -12,6 +13,7 @@ puzzle = """--- scanner 0 ---
 -1,-1
 -5,0
 -2,1""".splitlines()
+
 
 def parse(puzzle):
     scanners = dict()
@@ -30,8 +32,9 @@ def parse(puzzle):
             scanners[scanner] = points
     return scanners
 
+
 scanners = parse(puzzle)
-#pprint(scanners)
+# pprint(scanners)
 
 
 """
@@ -49,7 +52,7 @@ y,-x =  [ 0,  1]
 
 90 deg left (270 right, clockwise): (1, 3) => (-3, 1)
 -y,x =  [ 0, -1]
-        [ 1,  0]       
+        [ 1,  0]
 
 """
 
@@ -68,6 +71,7 @@ def rotate2d(point, matrix):
     y_new = x*matrix[0][1] + y*matrix[1][1]
     return x_new, y_new
 
+
 assert rotate2d((1, 3), ROTATE_2D[0]) == (1, 3)
 assert rotate2d((1, 3), ROTATE_2D[1]) == (3, -1)
 assert rotate2d((1, 3), ROTATE_2D[2]) == (-1, -3)
@@ -78,6 +82,7 @@ def dist_vector_2d(a, b):
     ax, ay = a
     bx, by = b
     return ax-bx, ay-by
+
 
 def compute_distances(points):
     distances = set()
@@ -98,58 +103,59 @@ def compute_distances(points):
 # https://www.reddit.com/r/adventofcode/comments/rjpf7f/comment/hp5nnej/?utm_source=reddit&utm_medium=web2x&context=3
 
 ROTATE_3D = [
-#   ([x, y, z]) => [x, y, z],
-#   ([x, y, z]) => [y, z, x],
-#   ([x, y, z]) => [z, x, y],
-    ((1, 0, 0), (0, 1, 0), (0, 0, 1)), 
-    ((0, 1, 0), (0, 0, 1), (1, 0, 0)), 
-    ((0, 0, 1), (1, 0, 0), (0, 1, 0)), 
-#   ([x, y, z]) => [-x, z, y],
-#   ([x, y, z]) => [z, y, -x],
-#   ([x, y, z]) => [y, -x, z],
-    ((-1, 0, 0), (0, 0, 1), (0, 1, 0)),    
-    ((0, 0, 1), (0, 1, 0), (-1, 0, 0)),    
-    ((0, 1, 0), (-1, 0, 0), (0, 0, 1)),    
-#   ([x, y, z]) => [x, z, -y],
-#   ([x, y, z]) => [z, -y, x],
-#   ([x, y, z]) => [-y, x, z],
-    ((1, 0, 0), (0, 0, 1), (0, -1, 0)),     
-    ((0, 0, 1), (0, -1, 0), (1, 0, 0)),    
-    ((0, -1, 0), (1, 0, 0), (0, 0, 1)), 
-#   ([x, y, z]) => [x, -z, y],
-#   ([x, y, z]) => [-z, y, x],
-#   ([x, y, z]) => [y, x, -z], 
-    ((1, 0, 0), (0, 0, -1), (0, 1, 0)),     
-    ((0, 0, -1), (0, 1, 0), (1, 0, 0)),    
-    ((0, 1, 0), (1, 0, 0), (0, 0, -1)), 
-#   ([x, y, z]) => [-x, -y, z],
-#   ([x, y, z]) => [-y, z, -x],
-#   ([x, y, z]) => [z, -x, -y], 
-    ((-1, 0, 0), (0, -1, 0), (0, 0, 1)),     
-    ((0, -1, 0), (0, 0, 1), (-1, 0, 0)),    
-    ((0, 0, 1), (-1, 0, 0), (0, -1, 0)),   
-#   ([x, y, z]) => [-x, y, -z],
-#   ([x, y, z]) => [y, -z, -x],
-#   ([x, y, z]) => [-z, -x, y],  
-    ((-1, 0, 0), (0, 1, 0), (0, 0, -1)),     
-    ((0, 1, 0), (0, 0, -1), (-1, 0, 0)),    
-    ((0, 0, -1), (-1, 0, 0), (0, 1, 0)),     
-#   ([x, y, z]) => [x, -y, -z],
-#   ([x, y, z]) => [-y, -z, x],
-#   ([x, y, z]) => [-z, x, -y],    
-    ((1, 0, 0), (0, -1, 0), (0, 0, -1)),     
-    ((0, -1, 0), (0, 0, -1), (1, 0, 0)),    
-    ((0, 0, -1), (1, 0, 0), (0, -1, 0)),  
-#   ([x, y, z]) => [-x, -z, -y],
-#   ([x, y, z]) => [-z, -y, -x],
-#   ([x, y, z]) => [-y, -x, -z],  
-    ((-1, 0, 0), (0, 0, -1), (0, -1, 0)),     
-    ((0, 0, -1), (0, -1, 0), (-1, 0, 0)),    
-    ((0, -1, 0), (-1, 0, 0), (0, 0, -1)),         
+    #   ([x, y, z]) => [x, y, z],
+    #   ([x, y, z]) => [y, z, x],
+    #   ([x, y, z]) => [z, x, y],
+    ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+    ((0, 1, 0), (0, 0, 1), (1, 0, 0)),
+    ((0, 0, 1), (1, 0, 0), (0, 1, 0)),
+    #   ([x, y, z]) => [-x, z, y],
+    #   ([x, y, z]) => [z, y, -x],
+    #   ([x, y, z]) => [y, -x, z],
+    ((-1, 0, 0), (0, 0, 1), (0, 1, 0)),
+    ((0, 0, 1), (0, 1, 0), (-1, 0, 0)),
+    ((0, 1, 0), (-1, 0, 0), (0, 0, 1)),
+    #   ([x, y, z]) => [x, z, -y],
+    #   ([x, y, z]) => [z, -y, x],
+    #   ([x, y, z]) => [-y, x, z],
+    ((1, 0, 0), (0, 0, 1), (0, -1, 0)),
+    ((0, 0, 1), (0, -1, 0), (1, 0, 0)),
+    ((0, -1, 0), (1, 0, 0), (0, 0, 1)),
+    #   ([x, y, z]) => [x, -z, y],
+    #   ([x, y, z]) => [-z, y, x],
+    #   ([x, y, z]) => [y, x, -z],
+    ((1, 0, 0), (0, 0, -1), (0, 1, 0)),
+    ((0, 0, -1), (0, 1, 0), (1, 0, 0)),
+    ((0, 1, 0), (1, 0, 0), (0, 0, -1)),
+    #   ([x, y, z]) => [-x, -y, z],
+    #   ([x, y, z]) => [-y, z, -x],
+    #   ([x, y, z]) => [z, -x, -y],
+    ((-1, 0, 0), (0, -1, 0), (0, 0, 1)),
+    ((0, -1, 0), (0, 0, 1), (-1, 0, 0)),
+    ((0, 0, 1), (-1, 0, 0), (0, -1, 0)),
+    #   ([x, y, z]) => [-x, y, -z],
+    #   ([x, y, z]) => [y, -z, -x],
+    #   ([x, y, z]) => [-z, -x, y],
+    ((-1, 0, 0), (0, 1, 0), (0, 0, -1)),
+    ((0, 1, 0), (0, 0, -1), (-1, 0, 0)),
+    ((0, 0, -1), (-1, 0, 0), (0, 1, 0)),
+    #   ([x, y, z]) => [x, -y, -z],
+    #   ([x, y, z]) => [-y, -z, x],
+    #   ([x, y, z]) => [-z, x, -y],
+    ((1, 0, 0), (0, -1, 0), (0, 0, -1)),
+    ((0, -1, 0), (0, 0, -1), (1, 0, 0)),
+    ((0, 0, -1), (1, 0, 0), (0, -1, 0)),
+    #   ([x, y, z]) => [-x, -z, -y],
+    #   ([x, y, z]) => [-z, -y, -x],
+    #   ([x, y, z]) => [-y, -x, -z],
+    ((-1, 0, 0), (0, 0, -1), (0, -1, 0)),
+    ((0, 0, -1), (0, -1, 0), (-1, 0, 0)),
+    ((0, -1, 0), (-1, 0, 0), (0, 0, -1)),
 ]
 
 assert len(ROTATE_3D) == 24
 assert len(set(ROTATE_3D)) == 24
+
 
 def rotate3d(point, matrix):
     x, y, z = point
@@ -158,12 +164,25 @@ def rotate3d(point, matrix):
     z_new = x*matrix[0][2] + y*matrix[1][2] + z*matrix[2][2]
     return x_new, y_new, z_new
 
-assert rotate3d((1,2,3),ROTATE_3D[0])==(1,2,3)
+
+assert rotate3d((1, 2, 3), ROTATE_3D[0]) == (1, 2, 3)
+
+
+def inverse_3d(matrix):
+    return tuple([[-1*i for i in row] for row in matrix])
+
 
 def dist_vector_3d(a, b):
     ax, ay, az = a
     bx, by, bz = b
     return ax-bx, ay-by, az-bz
+
+
+def shift_vector_3d(a, b):
+    ax, ay, az = a
+    bx, by, bz = b
+    return ax+bx, ay+by, az+bz
+
 
 def compute_distances_3d(points):
     distances = set()
@@ -175,8 +194,9 @@ def compute_distances_3d(points):
 
     return distances
 
+
 puzzle = readinput('19ex')
-#puzzle = readinput(19)
+puzzle = readinput(19)
 scanners = parse(puzzle)
 total_obs = sum(len(x) for x in scanners.values())
 print("total obs", total_obs)
@@ -185,82 +205,177 @@ print("total obs", total_obs)
 # find rotations of scanners relative to other scanner
 scanner_rots = dict()
 scanner_ids = list(scanners.keys())
-for i, s0 in enumerate(scanner_ids):
-    s0_dist = compute_distances_3d(scanners[s0])
-    for s in scanner_ids[i:]:
-        if s == s0:
-            continue
-        #print(f"test {s0} vs {s}")
-        best_rot = None
-        best_matches = 0
-        for i, rot in enumerate(ROTATE_3D):
-            s_dist = [rotate3d(p, rot) for p in compute_distances_3d(scanners[s])]
-            matches = len(s0_dist.intersection(s_dist))
-            #print(s, i, matches)
-            if matches >= 12*11:
-                #print(f"{s0} overlaps with {s}")
-                best_rot = rot
-                best_matches = matches
-                scanner_rots[(s0,s)] = best_rot
-                break
-
-#print("rots:")
-#pprint(scanner_rots)
-
-# now what? i guess we gotta figure out *which* beacons overlap.
-# we know which pairs overlap, 
+scanner_relative = dict()
 
 scanner_pos = dict()
 
+print("scanners", scanner_ids)
+home = '0'
+all_beacons = set()
+all_beacons.update(scanners[home])
+
+to_match = list(scanner_ids)
+
+while to_match:
+    s = to_match.pop(0)
+    if s == home:
+        continue
+    s0_dist = compute_distances_3d(all_beacons)
+    # print(f"test {s0} vs {s}")
+    best_rot = None
+    best_matches = 0
+    # find rotation
+    for i, rot in enumerate(ROTATE_3D):
+        s_dist = [rotate3d(p, rot)
+                  for p in compute_distances_3d(scanners[s])]
+        matches = len(s0_dist.intersection(s_dist))
+        # print(s, i, matches)
+        if matches >= 12*11:
+            print(f"{home} overlaps with {s}")
+            best_rot = rot
+            best_matches = matches
+            scanner_rots[(home, s)] = best_rot
+            break
+        # points
+
+    if best_rot is None:
+        to_match.append(s)
+        continue
+
+    rot = best_rot
+    # rotate points
+    s1_rotated_points = set()
+    for s1_point in scanners[s]:
+        s1_point_s0_basis = rotate3d(s1_point, rot)
+        # print(f"{s1} point {s1_point} rotated to {s1_point_s0_basis}")
+        s1_rotated_points.add(s1_point_s0_basis)
+
+    # find position of s1
+    for s0_point in all_beacons:
+        dists = {dist_vector_3d(s0_point, p) for p in all_beacons}
+        matched = False
+        for s1_point in s1_rotated_points:
+            s1_dists = {dist_vector_3d(s1_point, p)
+                        for p in s1_rotated_points}
+            if len(dists.intersection(s1_dists)) >= 12:
+                print(f"{s0_point} matches {s1_point}")
+                relative_distance = dist_vector_3d(s0_point, s1_point)
+                if (home, s) in scanner_pos:
+                    assert relative_distance == scanner_pos[home, s]
+                else:
+                    scanner_pos[home, s] = relative_distance
+    # add new beacons
+    for s1_point in s1_rotated_points:
+        all_beacons.add(shift_vector_3d(s1_point, relative_distance))
+
+print("i found", len(all_beacons))
+print(scanner_pos)
+
+sys.exit()
+
+# print("rots:")
+# pprint(scanner_rots) # (source_id, dest_id) : rot_matrix
+
+# now what? i guess we gotta figure out *which* beacons overlap.
+# we know which pairs overlap,
+
+
 all_points = set()
-for s,v in scanners.items():
+for s, v in scanners.items():
     for p in v:
         all_points.add((s, p))
 
-print("ap",len(all_points))
+print("ap", len(all_points))
 
-equivalences = set()
+# let's just collect all beacons as we find them.
+relative_points = dict()
 
 for s0, s1 in scanner_rots:
-    rot = scanner_rots[(s0,s1)]
+    # print("checking", s0, s1)
+    equivalences = set()
+    rot = scanner_rots[(s0, s1)]
+    # print("rot", rot)
+
+    # rotate all s1 points to s0 basis
+    s1_rotated_points = set()
+    for s1_point in scanners[s1]:
+        s1_point_s0_basis = rotate3d(s1_point, rot)
+        # print(f"{s1} point {s1_point} rotated to {s1_point_s0_basis}")
+        s1_rotated_points.add(s1_point_s0_basis)
+
     for s0_point in scanners[s0]:
         dists = {dist_vector_3d(s0_point, p) for p in scanners[s0]}
         matched = False
-        for s1_point in scanners[s1]: 
-            s1_dists = {rotate3d(dist_vector_3d(s1_point, p),rot) for p in scanners[s1]}
+        for s1_point in s1_rotated_points:
+            s1_dists = {dist_vector_3d(s1_point, rotate3d(p, rot))
+                        for p in scanners[s1]}
             if len(dists.intersection(s1_dists)) >= 12:
-                #print(f"{s0_point} matches {s1_point}")
-                equivalences.add(((s0, s0_point),(s1, s1_point)))
-                relative_distance = dist_vector_3d(s0_point, rotate3d(s1_point,rot))
-                if (s0,s1) in scanner_pos:
-                    assert relative_distance == scanner_pos[s0,s1]
-                scanner_pos[s0,s1] = relative_distance
+                # print(f"{s0_point} matches {s1_point}")
+                equivalences.add(((s0, s0_point), (s1, s1_point)))
+                relative_distance = dist_vector_3d(s0_point, s1_point)
+                if (s0, s1) in scanner_pos:
+                    assert relative_distance == scanner_pos[s0, s1]
+                scanner_pos[s0, s1] = relative_distance
+
                 matched = True
 
-print("eq",len(equivalences)) 
+    s0_relative_points = set()
+    for s1_point in s1_rotated_points:
+        s0_relative_points.add(shift_vector_3d(s1_point, scanner_pos[s0, s1]))
+
+    relative_points[(s0, s1)] = s0_relative_points
+
+    # print(s0_relative_points.intersection(scanners[s0]))
+
+    print("eq", s0, s1, len(equivalences))
+
+print("pos", scanner_pos)
+print("rot", scanner_rots)
+
+# if 0-1 is -1, 1, -1 then 1-0 is 1,-1, 1
+# given (0,1), (1,3), (1,4), (2,4) find path from 0 to each scanner
+print()
+
+
+# find scanner 3
+foo = rotate3d(scanner_pos[('1', '3')], scanner_rots[('0', '1')])
+print("3", shift_vector_3d(scanner_pos['0', '1'], foo))
+
+# find scanner 4
+foo = rotate3d(scanner_pos[('1', '4')], scanner_rots[('0', '1')])
+print("4", shift_vector_3d(scanner_pos['0', '1'], foo))
+s4 = shift_vector_3d(scanner_pos['0', '1'], foo)
+
+# find scanner 2
+print("2", shift_vector_3d(s4, scanner_pos['4', '2']))
+# 1105, -1205, 1229
+
+print()
+
 
 visited = set()
 unique = 0
-#print(scanner_pos)
+# print(scanner_pos)
 
 for s in scanners:
     for p in scanners[s]:
-        matches = [eq for eq in equivalences if eq[0] == (s,p) or eq[1] == (s,p)]
-        #print("for",(s,p),"found",matches)
+        matches = [eq for eq in equivalences if eq[0]
+                   == (s, p) or eq[1] == (s, p)]
+        # print("for",(s,p),"found",matches)
 
         already_counted = False
         for m in matches:
             if m[0][0] in visited or m[1][0] in visited:
-                #print("already counted",m)
+                # print("already counted",m)
                 already_counted = True
-                if (s,p) in all_points:
-                    all_points.remove((s,p))
+                if (s, p) in all_points:
+                    all_points.remove((s, p))
         if not already_counted:
             unique += 1
     visited.add(s)
 
-# i don't know why this overcounts. 
-print("#1,",unique,len(all_points))
+# i don't know why this overcounts.
+print("#1,", unique, len(all_points))
 
 """
 
@@ -271,7 +386,7 @@ and 2 has g, h, i
 and further that a == d, b == f
 and d == h and e == i
 
-how do we count the uniques? 
+how do we count the uniques?
 store 0-a, 0-b, 0-c
 1-d ? no because == 0-a
 1-e ? yes
@@ -283,8 +398,6 @@ store 0-a, 0-b, 0-c
 """
 
 
-
-
 # scanner_rots['0','0'] = ROTATE_3D[0]
 
 # relative_to_s0 = {'0': (0,0,0)}
@@ -293,11 +406,7 @@ store 0-a, 0-b, 0-c
 #     rot = scanner_rots['0',s0]
 #     if s0 in relative_to_s0:
 #         relative_pos = rotate3d(scanner_pos[s1,s0],rot)
-#         print("relative_pos", relative_pos) 
+#         print("relative_pos", relative_pos)
 #         relative_to_s0[s1] = dist_vector_3d(relative_to_s0[s0], relative_pos)
 
 # pprint(relative_to_s0)
-
-
-
-
