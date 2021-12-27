@@ -231,7 +231,7 @@ while to_match:
         matches = len(s0_dist.intersection(s_dist))
         # print(s, i, matches)
         if matches >= 12*11:
-            print(f"{home} overlaps with {s}")
+            #print(f"{home} overlaps with {s}")
             best_rot = rot
             best_matches = matches
             scanner_rots[(home, s)] = best_rot
@@ -258,7 +258,7 @@ while to_match:
             s1_dists = {dist_vector_3d(s1_point, p)
                         for p in s1_rotated_points}
             if len(dists.intersection(s1_dists)) >= 12:
-                print(f"{s0_point} matches {s1_point}")
+                #print(f"{s0_point} matches {s1_point}")
                 relative_distance = dist_vector_3d(s0_point, s1_point)
                 if (home, s) in scanner_pos:
                     assert relative_distance == scanner_pos[home, s]
@@ -268,8 +268,14 @@ while to_match:
     for s1_point in s1_rotated_points:
         all_beacons.add(shift_vector_3d(s1_point, relative_distance))
 
-print("i found", len(all_beacons))
-print(scanner_pos)
+print("#1", len(all_beacons))
+max_dist = 0
+for a in scanner_pos.values():
+    for b in scanner_pos.values():
+        dist = sum(abs(i) for i in dist_vector_3d(a, b))
+        if dist > max_dist:
+            max_dist = dist
+print("#2", max_dist)
 
 sys.exit()
 
