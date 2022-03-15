@@ -15,26 +15,30 @@ v.v..>>v.v
 solver(puzzle);
 
 function solver(puzzle) {
-  let seafloor = new Map();
+  // let seafloor = new Map();
 
   const max_y = puzzle.length;
   const max_x = puzzle[0].length;
+  // https://stackoverflow.com/questions/18163234/declare-an-empty-two-dimensional-array-in-javascript
+  // cannot do: new Array(5).fill(new Array(4).fill(0))
+  let seafloor = new Array(max_y).fill(0).map(() => new Array(max_x).fill(0));
 
   for (const [y, line] of puzzle.entries()) {
     for (const [x, char] of [...line].entries()) {
       if (">v".includes(char)) {
-        const key = `${x}-${y}`;
-        seafloor.set(key, char);
+        // const key = `${x}-${y}`;
+        // seafloor.set(key, char);
+        seafloor[y][x] = char;
       }
     }
   }
 
   function print_seafloor(sf) {
-    for (const y of Array(max_y).keys()) {
+    for (let y = 0; y < max_y; y++) {
       let rowStr = "";
-      for (const x of Array(max_x).keys()) {
-        const key = `${x}-${y}`;
-        rowStr += sf.get(key) ?? ".";
+      for (let x = 0; x < max_x; x++) {
+        //const key = `${x}-${y}`;
+        rowStr += sf[y][x] || ".";
       }
       console.log(rowStr);
     }
@@ -43,29 +47,36 @@ function solver(puzzle) {
 
   function next_seafloor(seafloor) {
     let moved = 0;
-    const new_seafloor = new Map();
-    for (const [key, char] of seafloor) {
-      //console.log("key", key);
-      if (char == ">") {
-        let [x, y] = key.split("-").map((x) => parseInt(x));
-        const dest_key = `${(x + 1) % max_x}-${y}`;
-        if (!seafloor.has(dest_key)) {
-          moved++;
-          new_seafloor.set(dest_key, ">");
-        } else {
-          new_seafloor.set(key, ">");
+    const new_seafloor = new Array(max_y)
+      .fill(0)
+      .map(() => new Array(max_x).fill(0));
+    for (const [y, row] of seafloor.entries()) {
+      for (const [x, char] of row.entries()) {
+        //console.log("key", key);
+        if (char == ">") {
+          const [dest_x, dest_y] = [(x + 1) % max_x, y];
+          if (!seafloor[dest_y][dest_x]) {
+            moved++;
+            new_seafloor[dest_y][dest_x] = ">";
+          } else {
+            new_seafloor[y][x] = ">";
+          }
         }
       }
     }
-    for (const [key, char] of seafloor) {
-      if (char == "v") {
-        let [x, y] = key.split("-").map((x) => parseInt(x));
-        const dest_key = `${x}-${(y + 1) % max_y}`;
-        if (seafloor.get(dest_key) != "v" && !new_seafloor.has(dest_key)) {
-          moved++;
-          new_seafloor.set(dest_key, "v");
-        } else {
-          new_seafloor.set(key, "v");
+    for (const [y, row] of seafloor.entries()) {
+      for (const [x, char] of row.entries()) {
+        if (char == "v") {
+          const [dest_x, dest_y] = [x, (y + 1) % max_y];
+          if (
+            seafloor[dest_y][dest_x] != "v" &&
+            !new_seafloor[dest_y][dest_x]
+          ) {
+            moved++;
+            new_seafloor[dest_y][dest_x] = "v";
+          } else {
+            new_seafloor[y][x] = "v";
+          }
         }
       }
     }
