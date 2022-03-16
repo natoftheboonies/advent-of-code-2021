@@ -16,10 +16,11 @@ const DIRS = [
 
 function solve(puzzle) {
   const maze = [];
-  for (const line of puzzle) {
+  // for (const line of puzzle) {
+  puzzle.forEach((line) => {
     //console.log(line);
     maze.push(line.split("").map((x) => parseInt(x)));
-  }
+  });
 
   const dim = { row: maze.length, col: maze[0].length };
   console.log("maze dim", dim);
@@ -43,10 +44,11 @@ function solve(puzzle) {
 
         return base_cost;
       }
-      for (const [dx, dy] of DIRS) {
+      // for (const [dx, dy] of DIRS) {
+      DIRS.forEach(([dx, dy]) => {
         const x = hx + dx;
         const y = hy + dy;
-        if (x > goal[0] || x < 0 || y > goal[1] || y < 0) continue;
+        if (x > goal[0] || x < 0 || y > goal[1] || y < 0) return;
         const key = y * dim.row * mult + x;
         // compute adjusted cost for nodes beyond maze
         let cost =
@@ -62,7 +64,7 @@ function solve(puzzle) {
           shortest.set(key, neighbor_cost);
           heap.push(key, neighbor_cost);
         }
-      }
+      });
     }
   }
 
@@ -92,5 +94,5 @@ fs.readFile("input15", "utf8", (err, data) => {
     return;
   }
   const steps = data.split("\n").filter((x) => Boolean(x));
-  solve(steps);
+  solve(steps); // 769, 2963
 });

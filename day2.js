@@ -5,7 +5,8 @@ const fs = require("fs");
 function part1(steps) {
   let depth = 0;
   let pos = 0;
-  for (const { direction, dist } of steps) {
+  //for (const { direction, dist } of steps) {
+  steps.forEach(({ direction, dist }) => {
     switch (direction) {
       case "forward":
         pos += dist;
@@ -17,7 +18,7 @@ function part1(steps) {
         depth -= dist;
         break;
     }
-  }
+  });
   return depth * pos;
 }
 
@@ -25,7 +26,7 @@ function part2(steps) {
   let aim = 0;
   let depth = 0;
   let pos = 0;
-  for (const { direction, dist } of steps) {
+  steps.forEach(({ direction, dist }) => {
     switch (direction) {
       case "forward":
         pos += dist;
@@ -38,7 +39,7 @@ function part2(steps) {
         aim -= dist;
         break;
     }
-  }
+  });
   return depth * pos;
 }
 
@@ -52,8 +53,8 @@ forward 2
   .split("\n")
   .filter((x) => Boolean(x))
   .map((line) => {
-    const parts = line.split(" ");
-    return { direction: parts[0], dist: Number(parts[1]) };
+    const [direction, dist] = line.split(" ");
+    return { direction, dist: Number(dist) };
   });
 
 console.log("sample1", part1(sample));

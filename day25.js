@@ -23,15 +23,17 @@ function solver(puzzle) {
   // cannot do: new Array(5).fill(new Array(4).fill(0))
   let seafloor = new Array(max_y).fill(0).map(() => new Array(max_x).fill(0));
 
-  for (const [y, line] of puzzle.entries()) {
-    for (const [x, char] of [...line].entries()) {
+  // for (const [y, line] of puzzle.entries()) {
+  //   for (const [x, char] of [...line].entries()) {
+  puzzle.forEach((line, y) => {
+    line.split("").forEach((char, x) => {
       if (">v".includes(char)) {
         // const key = `${x}-${y}`;
         // seafloor.set(key, char);
         seafloor[y][x] = char;
       }
-    }
-  }
+    });
+  });
 
   function print_seafloor(sf) {
     for (let y = 0; y < max_y; y++) {
@@ -50,8 +52,10 @@ function solver(puzzle) {
     const new_seafloor = new Array(max_y)
       .fill(0)
       .map(() => new Array(max_x).fill(0));
-    for (const [y, row] of seafloor.entries()) {
-      for (const [x, char] of row.entries()) {
+    //for (const [y, row] of seafloor.entries()) {
+    //for (const [x, char] of row.entries()) {
+    seafloor.forEach((row, y) => {
+      row.forEach((char, x) => {
         //console.log("key", key);
         if (char == ">") {
           const [dest_x, dest_y] = [(x + 1) % max_x, y];
@@ -62,10 +66,12 @@ function solver(puzzle) {
             new_seafloor[y][x] = ">";
           }
         }
-      }
-    }
-    for (const [y, row] of seafloor.entries()) {
-      for (const [x, char] of row.entries()) {
+      });
+    });
+    // for (const [y, row] of seafloor.entries()) {
+    //   for (const [x, char] of row.entries()) {
+    seafloor.forEach((row, y) => {
+      row.forEach((char, x) => {
         if (char == "v") {
           const [dest_x, dest_y] = [x, (y + 1) % max_y];
           if (
@@ -78,8 +84,8 @@ function solver(puzzle) {
             new_seafloor[y][x] = "v";
           }
         }
-      }
-    }
+      });
+    });
 
     return { moved, new_seafloor };
   }

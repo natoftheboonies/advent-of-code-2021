@@ -4,7 +4,8 @@ const fs = require("fs");
 
 function solve(fishes) {
   const queue = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-  for (const fish of fishes) queue[fish]++;
+  // for (const fish of fishes) queue[fish]++;
+  fishes.forEach((fish) => queue[fish]++);
 
   for (let t = 0; t < 80; t++) {
     const to_breed = queue[0];
