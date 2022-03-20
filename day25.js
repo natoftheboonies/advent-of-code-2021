@@ -21,7 +21,8 @@ function solver(puzzle) {
   const max_x = puzzle[0].length;
   // https://stackoverflow.com/questions/18163234/declare-an-empty-two-dimensional-array-in-javascript
   // cannot do: new Array(5).fill(new Array(4).fill(0))
-  let seafloor = new Array(max_y).fill(0).map(() => new Array(max_x).fill(0));
+  //let seafloor = new Array(max_y).fill(0).map(() => new Array(max_x).fill(0));
+  let seafloor = Array.from({ length: max_y }, () => new Array(max_x).fill(0));
 
   // for (const [y, line] of puzzle.entries()) {
   //   for (const [x, char] of [...line].entries()) {

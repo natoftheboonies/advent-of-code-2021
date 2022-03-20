@@ -57,7 +57,7 @@ function solve(puzzle) {
     }
   });
 
-  const part1 = [...gridmap.values()].filter((n) => n > 1).length;
+  const part1 = Array.from(gridmap.values()).filter((n) => n > 1).length;
   console.log("#1", part1);
 
   lines.forEach((line) => {
@@ -74,9 +74,9 @@ function solve(puzzle) {
     }
   });
 
-  const part2 = [...gridmap.values()].filter((n) => n > 1).length;
+  const part2 = Array.from(gridmap.values()).filter((n) => n > 1).length;
 
-  console.log("#2", part2, gridmap.size);
+  console.log("#2", part2 /*gridmap.size*/);
 }
 
 console.log("# sample");

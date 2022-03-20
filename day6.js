@@ -3,7 +3,9 @@
 const fs = require("fs");
 
 function solve(fishes) {
-  const queue = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  //const queue = Array.from({ length: 9 }, () => 0);
+  const queue = new Array(9).fill(0);
+
   // for (const fish of fishes) queue[fish]++;
   fishes.forEach((fish) => queue[fish]++);
 
