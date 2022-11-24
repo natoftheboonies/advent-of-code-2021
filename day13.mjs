@@ -45,17 +45,22 @@ function solve(input) {
   // e.g. fold at 7, and 3,10 turns into 3,7-(10-7) = 3,4
   // or, 3, 2*y_fold-y, so 14-10
   let part1 = false;
-  for (const fold of folds) {
+  //for (const fold of folds) {
+  folds.forEach((fold) => {
     switch (fold[0]) {
       case "x":
-        for (const dot of dots) {
+        dots.forEach((dot) => {
+          //for (const dot of dots) {
           if (dot[0] > fold[1]) dot[0] = 2 * fold[1] - dot[0];
-        }
+          //}
+        });
         break;
       case "y":
-        for (const dot of dots) {
+        dots.forEach((dot) => {
+          //for (const dot of dots) {
           if (dot[1] > fold[1]) dot[1] = 2 * fold[1] - dot[1];
-        }
+          //}
+        });
         break;
       default:
         console.log(`bad fold ${fold}`);
@@ -65,7 +70,7 @@ function solve(input) {
       const dotsSet = new Set(dots.map((dot) => dot.join(",")));
       console.log(`#1: ${dotsSet.size}`);
     }
-  }
+  });
 
   const dotsSet = new Set(dots.map((dot) => dot.join(",")));
   // x1, y1, x2, y2
